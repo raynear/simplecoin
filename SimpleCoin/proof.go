@@ -3,6 +3,7 @@ package SimpleCoin
 import (
 	"bytes"
 	"crypto/sha256"
+	"fmt"
 	"hash"
 	"strconv"
 )
@@ -10,18 +11,26 @@ import (
 // ShaHash : Sha256 hash variable
 var ShaHash hash.Hash
 
+// StopFlag :
+var StopFlag bool
+
 // Zeros :
 var Zeros []byte
 
 func init() {
 	ShaHash = sha256.New()
-	Difficulty = 3
 
-	Zeros = []byte("0")
-	var i uint8
-	for i = 1; i < Difficulty; i++ {
-		Zeros = append(Zeros, byte(48))
-	}
+	Zeros = append(Zeros, byte(0))
+	Zeros = append(Zeros, byte(0))
+	Zeros = append(Zeros, byte(0))
+	//	var i uint8
+	//	for i = 1; i < Difficulty; i++ {
+	Zeros = append(Zeros, byte(Difficulty))
+	//	}
+
+	StopFlag = false
+
+	fmt.Println(Zeros)
 }
 
 // ValidProof find proof
@@ -37,8 +46,13 @@ func FindProof(PrevHash []byte) uint64 {
 	for i = 0; ; i++ {
 		aHash := ValidProof(PrevHash, strconv.FormatUint(i, 36))
 
-		if bytes.Compare(aHash[len(aHash)-int(Difficulty):], Zeros) == 0 {
+		if bytes.Compare(aHash[4:], Zeros) < 0 {
 			return i
+		}
+
+		if StopFlag == true {
+			StopFlag = false
+			return 0
 		}
 	}
 }

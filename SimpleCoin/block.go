@@ -4,6 +4,9 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -64,9 +67,31 @@ func MakeChain(aBlock Block) {
 func Mining() {
 	for {
 		proof := FindProof(HashBlock(BlockChain[currentBlockNumber]))
-		MakeChain(Block{HashBlock(BlockChain[currentBlockNumber]), time.Now(), Difficulty, proof, currentBlockNumber, ReceivedTransactions, balanceOf})
-		balanceOf[Miner] += uint32(MiningReward)
-		fmt.Println(BlockChain[currentBlockNumber])
+		if proof == 0 {
+			if AnnouncedBlock.BlockNumber == currentBlockNumber+1 {
+				// Get RecentBlock
+				var NewBlock Block
+				blocknumberstr := strconv.FormatUint(AnnouncedBlock.BlockNumber, 10)
+				resp, err := http.Get(AnnouncedBlock.MinedNode.Address + "/getblock?blocknumber=" + blocknumberstr)
+
+				// Response 체크.
+				respBody, err := ioutil.ReadAll(resp.Body)
+				if err == nil {
+					str := string(respBody)
+					fmt.Println(str)
+				}
+				json.Unmarshal(respBody, &NewBlock)
+				MakeChain(NewBlock)
+				AnnouncedBlock = Announce{0, Node{""}}
+			} else {
+				// 언제부터 받아야 되는지 확인해봐야 함
+			}
+		} else {
+			balanceOf[Miner] += uint32(MiningReward)
+			MakeChain(Block{HashBlock(BlockChain[currentBlockNumber]), time.Now(), Difficulty, proof, currentBlockNumber, ReceivedTransactions, balanceOf})
+			AnnounceMakeBlock(currentBlockNumber + 1)
+			fmt.Println(BlockChain[currentBlockNumber])
+		}
 	}
 }
 
@@ -76,6 +101,7 @@ func Genesis() {
 	currentBlockNumber = 0
 	BlockChain = make(map[uint64]Block)
 	balanceOf = make(map[string]uint32)
+	//	NodeList = make([]Node)
 	balanceOf[Miner] = uint32(1000)
 
 	MakeChain(Block{HashBlock(BlockChain[currentBlockNumber]), time.Now(), Difficulty, proof, currentBlockNumber, ReceivedTransactions, balanceOf})
