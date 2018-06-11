@@ -41,10 +41,10 @@ func executeTransactions(Transactions []Transaction) {
 		if balanceOf[aTransaction.From] >= aTransaction.Amount {
 			balanceOf[aTransaction.From] -= aTransaction.Amount
 			balanceOf[aTransaction.To] += aTransaction.Amount
-			fmt.Printf("Success : %s send %d to %s",
+			fmt.Printf("Success : %s send %d to %s\n",
 				aTransaction.From, aTransaction.Amount, aTransaction.To)
 		} else {
-			fmt.Printf("FAIL : %s Try to send %d but have %d",
+			fmt.Printf("FAIL : %s Try to send %d but have %d\n",
 				aTransaction.From, aTransaction.Amount, balanceOf[aTransaction.From])
 		}
 	}
@@ -57,7 +57,6 @@ func MakeChain(aBlock Block) {
 	ReceivedTransactions = ReceivedTransactions[:0]
 	BlockChain[currentBlockNumber+1] = aBlock
 	currentBlockNumber++
-	// make block
 	// anounce
 }
 
