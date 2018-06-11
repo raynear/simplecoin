@@ -37,7 +37,7 @@ func GetMyIP() string {
 
 		if ok && !networkIP.IP.IsLoopback() && networkIP.IP.To4() != nil {
 			ip := networkIP.IP.String()
-			fmt.Println("Resolved Host IP: " + ip)
+			//			fmt.Println("Resolved Host IP: " + ip)
 			return ip
 		}
 	}

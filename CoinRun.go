@@ -7,11 +7,15 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/codegangsta/negroni"
 	"github.com/gorilla/mux"
 )
+
+var MyPort string
+var MyWallet string
 
 func transaction(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("transaction post")
@@ -43,7 +47,7 @@ func push2node(aNode string) {
 		return
 	}
 	var bNode coin.Node
-	bNode = coin.Node{"http://" + MyIP + ":" + coin.Port}
+	bNode = coin.Node{"http://" + MyIP + ":" + MyPort}
 	nodebyte, _ := json.Marshal(bNode)
 	buff := bytes.NewBuffer(nodebyte)
 
@@ -143,8 +147,8 @@ func listenmakeblock(w http.ResponseWriter, r *http.Request) {
 
 func getblock(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("get block")
-	blocknumberstr := r.Header.Get("blocknumber")
-	blocknumber, err := strconv.Atoi(blocknumberstr)
+	blocknumberstr := r.URL.Query()["blocknumber"]
+	blocknumber, err := strconv.Atoi(blocknumberstr[0])
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -158,6 +162,12 @@ func getblock(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 
+	MyPort = os.Args[1]
+	coin.Port = MyPort
+
+	MyWallet = os.Args[2]
+	coin.Miner = MyWallet
+
 	mux := mux.NewRouter()
 	mux.HandleFunc("/transaction", transaction).Methods("POST")
 	mux.HandleFunc("/addnode", addnode).Methods("POST")
@@ -167,7 +177,7 @@ func main() {
 
 	n := negroni.Classic()
 	n.UseHandler(mux)
-	go n.Run(":" + coin.Port)
+	go n.Run(":" + MyPort)
 
 	coin.Genesis()
 	coin.Mining()

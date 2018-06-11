@@ -58,8 +58,8 @@ func MakeChain(aBlock Block) {
 	// execute Transaction
 	executeTransactions(ReceivedTransactions)
 	ReceivedTransactions = ReceivedTransactions[:0]
-	BlockChain[currentBlockNumber+1] = aBlock
 	currentBlockNumber++
+	BlockChain[currentBlockNumber] = aBlock
 	// anounce
 }
 
@@ -68,10 +68,12 @@ func Mining() {
 	for {
 		proof := FindProof(HashBlock(BlockChain[currentBlockNumber]))
 		if proof == 0 {
-			if AnnouncedBlock.BlockNumber == currentBlockNumber+1 {
+			if AnnouncedBlock.BlockNumber >= currentBlockNumber+1 {
 				// Get RecentBlock
 				var NewBlock Block
 				blocknumberstr := strconv.FormatUint(AnnouncedBlock.BlockNumber, 10)
+				//fmt.Printf("announcedblock number : %d\n", AnnouncedBlock.BlockNumber)
+				//fmt.Printf("blocknumberstr:%s\n", blocknumberstr)
 				resp, err := http.Get(AnnouncedBlock.MinedNode.Address + "/getblock?blocknumber=" + blocknumberstr)
 
 				// Response 체크.
@@ -82,6 +84,7 @@ func Mining() {
 				}
 				json.Unmarshal(respBody, &NewBlock)
 				MakeChain(NewBlock)
+				balanceOf = NewBlock.BalanceOf
 				AnnouncedBlock = Announce{0, Node{""}}
 			} else {
 				// 언제부터 받아야 되는지 확인해봐야 함
@@ -89,7 +92,7 @@ func Mining() {
 		} else {
 			balanceOf[Miner] += uint32(MiningReward)
 			MakeChain(Block{HashBlock(BlockChain[currentBlockNumber]), time.Now(), Difficulty, proof, currentBlockNumber, ReceivedTransactions, balanceOf})
-			AnnounceMakeBlock(currentBlockNumber + 1)
+			AnnounceMakeBlock(currentBlockNumber)
 			fmt.Println(BlockChain[currentBlockNumber])
 		}
 	}
@@ -104,7 +107,7 @@ func Genesis() {
 	//	NodeList = make([]Node)
 	balanceOf[Miner] = uint32(1000)
 
-	MakeChain(Block{HashBlock(BlockChain[currentBlockNumber]), time.Now(), Difficulty, proof, currentBlockNumber, ReceivedTransactions, balanceOf})
+	BlockChain[0] = Block{HashBlock(BlockChain[currentBlockNumber]), time.Now(), Difficulty, proof, currentBlockNumber, ReceivedTransactions, balanceOf}
 	fmt.Println(BlockChain[currentBlockNumber])
 }
 
