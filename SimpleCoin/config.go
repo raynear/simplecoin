@@ -1,7 +1,7 @@
 package SimpleCoin
 
 // Difficulty :
-var Difficulty uint8 = 50
+var Difficulty uint8 = 150
 
 // GenesisHash :
 var GenesisHash = []byte("SimpleCoinGenesis")

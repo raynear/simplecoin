@@ -14,7 +14,10 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// MyPort from command line
 var MyPort string
+
+// MyWallet from command line
 var MyWallet string
 
 func transaction(w http.ResponseWriter, r *http.Request) {
@@ -47,7 +50,7 @@ func push2node(aNode string) {
 		return
 	}
 	var bNode coin.Node
-	bNode = coin.Node{"http://" + MyIP + ":" + MyPort}
+	bNode = coin.Node{Address: "http://" + MyIP + ":" + MyPort}
 	nodebyte, _ := json.Marshal(bNode)
 	buff := bytes.NewBuffer(nodebyte)
 
@@ -105,7 +108,7 @@ func addnode(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		panic(err)
 	}
-	coin.NodeList = append(coin.NodeList, coin.Node{node.Address})
+	coin.NodeList = append(coin.NodeList, coin.Node{Address: node.Address})
 
 	fmt.Println(coin.NodeList)
 
@@ -142,7 +145,7 @@ func listenmakeblock(w http.ResponseWriter, r *http.Request) {
 	}
 	coin.AnnouncedBlock = Announce
 
-	coin.StopFlag = true
+	coin.StopFlag <- true
 }
 
 func getblock(w http.ResponseWriter, r *http.Request) {
@@ -180,5 +183,5 @@ func main() {
 	go n.Run(":" + MyPort)
 
 	coin.Genesis()
-	coin.Mining()
+	go coin.Mining()
 }
