@@ -13,12 +13,13 @@ type Node struct {
 	Address string `json:"node"`
 }
 
+// Announce : type of Announce
 type Announce struct {
 	BlockNumber uint64 `json:"blocknumber"`
 	MinedNode   Node   `json:"node"`
 }
 
-// AnnouncedBlock
+// AnnouncedBlock :
 var AnnouncedBlock Announce
 
 // NodeList :
@@ -44,6 +45,7 @@ func GetMyIP() string {
 	return ""
 }
 
+// AnnounceMakeBlock : 블럭 생성했을 때 노드들에게 알리기
 func AnnounceMakeBlock(blocknumber uint64) {
 	for _, aNode := range NodeList {
 		MyIP := GetMyIP()
@@ -60,6 +62,7 @@ func AnnounceMakeBlock(blocknumber uint64) {
 		resp, err := http.Post(aNode.Address+"/listenmakeblock", "application/json", buff)
 		if err != nil {
 			fmt.Println(err)
+			return
 		}
 		defer resp.Body.Close()
 	}

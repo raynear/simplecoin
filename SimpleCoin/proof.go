@@ -12,7 +12,7 @@ import (
 var ShaHash hash.Hash
 
 // StopFlag :
-var StopFlag chan bool
+var StopFlag bool
 
 // Zeros :
 var Zeros []byte
@@ -28,8 +28,9 @@ func init() {
 	Zeros = append(Zeros, byte(Difficulty))
 	//	}
 
-	StopFlag = make(chan bool, 1)
-	StopFlag <- false
+	//	StopFlag = make(chan bool, 1)
+	//	StopFlag <- false
+	StopFlag = false
 
 	fmt.Println(Zeros)
 }
@@ -47,12 +48,12 @@ func FindProof(PrevHash []byte) uint64 {
 	for i = 0; ; i++ {
 		aHash := ValidProof(PrevHash, strconv.FormatUint(i, 36))
 
-		if bytes.Compare(aHash[4:], Zeros) < 0 {
+		if bytes.Compare(aHash[len(aHash)-4:], Zeros) < 0 {
 			return i
 		}
 
-		if <-StopFlag == true {
-			StopFlag <- false
+		if StopFlag == true {
+			StopFlag = false
 			return 0
 		}
 	}

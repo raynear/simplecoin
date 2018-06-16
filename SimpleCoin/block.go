@@ -17,6 +17,7 @@ type Block struct {
 	Difficulty    uint8             `json:"difficulty"`
 	Proof         uint64            `json:"proof"`
 	BlockNumber   uint64            `json:"blocknumber"`
+	NodeID        string            `json:"nodeid"`
 	Transactions  []Transaction     `json:"transactions"`
 	BalanceOf     map[string]uint32 `json:"balanceOf"`
 }
@@ -58,7 +59,6 @@ func MakeChain(aBlock Block) {
 	// execute Transaction
 	executeTransactions(ReceivedTransactions)
 	ReceivedTransactions = ReceivedTransactions[:0]
-	currentBlockNumber++
 	BlockChain[currentBlockNumber] = aBlock
 	// anounce
 }
@@ -68,32 +68,44 @@ func Mining() {
 	for {
 		proof := FindProof(HashBlock(BlockChain[currentBlockNumber]))
 		if proof == 0 {
-			if AnnouncedBlock.BlockNumber >= currentBlockNumber+1 {
+			if AnnouncedBlock.BlockNumber == currentBlockNumber+1 {
+				fmt.Println("AnnouncedBlock - if")
 				// Get RecentBlock
 				var NewBlock Block
 				blocknumberstr := strconv.FormatUint(AnnouncedBlock.BlockNumber, 10)
-				//fmt.Printf("announcedblock number : %d\n", AnnouncedBlock.BlockNumber)
-				//fmt.Printf("blocknumberstr:%s\n", blocknumberstr)
-				resp, err := http.Get(AnnouncedBlock.MinedNode.Address + "/getblock?blocknumber=" + blocknumberstr)
+				httpget := AnnouncedBlock.MinedNode.Address + "/getblock?blocknumber=" + blocknumberstr
+				// local에서 실행하기 위해선 윗줄 주석 & 아랫줄로 대체
+				//httpget := "http://127.0.0.1:" + AnnouncedBlock.MinedNode.Address[len(AnnouncedBlock.MinedNode.Address)-4:] + "/getblock?blocknumber=" + blocknumberstr
+				resp, err := http.Get(httpget)
+				if err != nil {
+					fmt.Println(err)
+				}
 
 				// Response 체크.
 				respBody, err := ioutil.ReadAll(resp.Body)
-				if err == nil {
-					str := string(respBody)
-					fmt.Println(str)
+				if err != nil {
+					fmt.Println(err)
 				}
 				json.Unmarshal(respBody, &NewBlock)
+				fmt.Printf("[Mining] %s Mined! %d block : %d at %s\n", NewBlock.NodeID, NewBlock.BlockNumber, NewBlock.Proof, NewBlock.TimeStamp.Format("2006-01-02 15:04:05"))
+				fmt.Println(NewBlock.BalanceOf)
+				currentBlockNumber = NewBlock.BlockNumber
 				MakeChain(NewBlock)
 				balanceOf = NewBlock.BalanceOf
 				AnnouncedBlock = Announce{0, Node{""}}
 			} else {
+				fmt.Println("AnnouncedBlock - else")
 				// 언제부터 받아야 되는지 확인해봐야 함
 			}
 		} else {
 			balanceOf[Miner] += uint32(MiningReward)
-			MakeChain(Block{HashBlock(BlockChain[currentBlockNumber]), time.Now(), Difficulty, proof, currentBlockNumber, ReceivedTransactions, balanceOf})
+			currentBlockNumber++
+			MakeChain(Block{HashBlock(BlockChain[currentBlockNumber-1]), time.Now(), Difficulty, proof, currentBlockNumber, GetMyIP() + ":" + Port, ReceivedTransactions, balanceOf})
 			AnnounceMakeBlock(currentBlockNumber)
-			fmt.Println(BlockChain[currentBlockNumber])
+			//fmt.Println(BlockChain[currentBlockNumber])
+			PrintBlock := BlockChain[currentBlockNumber]
+			fmt.Printf("[Mining] LocalNode Mined! %d block : %d at %s\n", PrintBlock.BlockNumber, PrintBlock.Proof, PrintBlock.TimeStamp.Format("2006-01-02 15:04:05"))
+			fmt.Println(PrintBlock.BalanceOf)
 		}
 	}
 }
@@ -105,9 +117,10 @@ func Genesis() {
 	BlockChain = make(map[uint64]Block)
 	balanceOf = make(map[string]uint32)
 	//	NodeList = make([]Node)
-	balanceOf[Miner] = uint32(1000)
+	balanceOf[Miner] = uint32(10)
 
-	BlockChain[0] = Block{HashBlock(BlockChain[currentBlockNumber]), time.Now(), Difficulty, proof, currentBlockNumber, ReceivedTransactions, balanceOf}
+	BlockChain[currentBlockNumber] = Block{HashBlock(BlockChain[currentBlockNumber]), time.Now(), Difficulty, proof, currentBlockNumber, GetMyIP() + ":" + Port, ReceivedTransactions, balanceOf}
+	AnnounceMakeBlock(currentBlockNumber)
 	fmt.Println(BlockChain[currentBlockNumber])
 }
 

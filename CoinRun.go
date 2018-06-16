@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/codegangsta/negroni"
 	"github.com/gorilla/mux"
@@ -21,7 +22,6 @@ var MyPort string
 var MyWallet string
 
 func transaction(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("transaction post")
 	Body, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
@@ -35,7 +35,6 @@ func transaction(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 500)
 		return
 	}
-	fmt.Println("Receive a Transaction")
 	fmt.Println(aTransaction)
 	coin.ReceivedTransactions = append(coin.ReceivedTransactions, aTransaction)
 
@@ -44,7 +43,6 @@ func transaction(w http.ResponseWriter, r *http.Request) {
 }
 
 func push2node(aNode string) {
-	fmt.Println("push node")
 	MyIP := coin.GetMyIP()
 	if MyIP == "" {
 		return
@@ -69,11 +67,10 @@ func push2node(aNode string) {
 }
 
 func pullnodes(aNode string) []coin.Node {
-	fmt.Println("pull node")
 
 	var Nodes []coin.Node
 	// nodelist에서 nodes 가져오기
-	resp, err := http.Get(aNode + "/nodelist")
+	resp, err := http.Get(aNode + "/getnodelist")
 	if err != nil {
 		fmt.Println(err)
 		return Nodes
@@ -84,18 +81,15 @@ func pullnodes(aNode string) []coin.Node {
 	respBody, err := ioutil.ReadAll(resp.Body)
 	if err == nil {
 		str := string(respBody)
-		fmt.Println("pullnodes : ")
 		fmt.Println(str)
 	}
 	json.Unmarshal(respBody, &Nodes)
-	fmt.Println("json?")
 	fmt.Println(Nodes)
 
 	return Nodes
 }
 
 func addnode(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("add node")
 	// request를 어떤 방식으로 받을 것인가?
 	b, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
@@ -112,6 +106,9 @@ func addnode(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println(coin.NodeList)
 
+	if strings.Contains(node.Address, "localhost") || strings.Contains(node.Address, "127.0.0.1") {
+		return
+	}
 	Nodes := pullnodes(node.Address)
 
 	for _, aNode := range Nodes {
@@ -120,7 +117,6 @@ func addnode(w http.ResponseWriter, r *http.Request) {
 }
 
 func getnodelist(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("node list")
 	jData, err := json.Marshal(coin.NodeList)
 	if err != nil {
 		fmt.Println(err)
@@ -130,7 +126,6 @@ func getnodelist(w http.ResponseWriter, r *http.Request) {
 }
 
 func listenmakeblock(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("listenmakeblock")
 
 	b, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
@@ -143,13 +138,13 @@ func listenmakeblock(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		panic(err)
 	}
+	fmt.Println(Announce)
 	coin.AnnouncedBlock = Announce
 
-	coin.StopFlag <- true
+	coin.StopFlag = true
 }
 
 func getblock(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("get block")
 	blocknumberstr := r.URL.Query()["blocknumber"]
 	blocknumber, err := strconv.Atoi(blocknumberstr[0])
 	if err != nil {
@@ -178,10 +173,11 @@ func main() {
 	mux.HandleFunc("/listenmakeblock", listenmakeblock).Methods("POST")
 	mux.HandleFunc("/getblock", getblock).Methods("GET")
 
-	n := negroni.Classic()
+	//	n := negroni.Classic()
+	n := negroni.New()
 	n.UseHandler(mux)
 	go n.Run(":" + MyPort)
 
 	coin.Genesis()
-	go coin.Mining()
+	coin.Mining()
 }
