@@ -1,0 +1,38 @@
+{
+    "CoinName":"Ethereum",
+    "SSL":"false",
+    "RPCTYPE":"JSONRPC",
+    "URL":"http://192.168.56.101:8545/",
+    "USER":"",
+    "PASS":"",
+    "functions":[
+        {
+            "function" : "eth_accounts"
+        },
+        {
+            "function" : "eth_blockNumber"
+        },
+        {
+            "function" : "eth_call",
+            "parameters" : [{"to":"0xcb405c507df0a1b5f7c83a660ae583c11ed322aa"}, "latest"]
+        },
+        {
+            "function" : "eth_coinbase"
+        },
+        {
+            "function" : "eth_getBalance",
+            "parameters" : [
+                "0x407d73d8a49eeb85d32cf465507dd71d507100c1",
+                "latest"
+            ]
+        },
+        {
+            "function" : "eth_estimateGas",
+            "parameters" : [{"to":"0xcb405c507df0a1b5f7c83a660ae583c11ed322aa"}]
+        },
+        {
+            "function" : "eth_getBlockByNumber",
+            "parameters" : ["0x38bccc",true]
+        }
+    ]
+}

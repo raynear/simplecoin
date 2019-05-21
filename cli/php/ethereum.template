@@ -1,0 +1,6 @@
+{
+    "jsonrpc":"2.0",
+    "method":"{{.FunctionName}}",
+    {{if .Parameters}}"params":{{.Parameters}},{{else}}{{end}}
+    "id":"{{.ID}}"
+}

@@ -1,0 +1,17 @@
+2019/01/02 16:02:37 pre processing BXAToken.sol
+2019/01/02 16:02:37 pre processing Migrations.sol
+2019/01/02 16:02:37 pre processing ERC20Base.sol
+2019/01/02 16:02:37 pre processing SafeMath.sol
+2019/01/02 16:02:37 Resolved  Migrations.sol
+2019/01/02 16:02:37 ERC20Base.sol remains unresolved
+2019/01/02 16:02:37 BXAToken.sol remains unresolved
+2019/01/02 16:02:37 Resolved  SafeMath.sol
+2019/01/02 16:02:37 Written Migrations.sol (45) lines
+2019/01/02 16:02:37 ERC20Base.sol remains unresolved
+2019/01/02 16:02:37 BXAToken.sol remains unresolved
+2019/01/02 16:02:37 Written SafeMath.sol (39) lines
+2019/01/02 16:02:37 BXAToken.sol remains unresolved
+2019/01/02 16:02:37 Resolved  ERC20Base.sol
+2019/01/02 16:02:37 Written ERC20Base.sol (125) lines
+2019/01/02 16:02:37 Resolved  BXAToken.sol
+2019/01/02 16:02:37 Written BXAToken.sol (95) lines

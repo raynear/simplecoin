@@ -1,0 +1,23 @@
+{
+    "CoinName":"SimpleCoin",
+    "URL":"https://daum.net/",
+    "RPCType":"JSONRPC",
+    "SSL":true,
+    "functions":[
+        {
+            "FuncName":"getBalance",
+            "parameters":{
+                "account":"raynear",
+                "loves":"cuteyun"
+            }
+        },
+        {
+            "FuncName":"getStatus",
+            "parameters":{
+                "account":"cuteyun",
+                "loves":"raynear",
+                "cute":"junsu&junho"
+            }
+        }
+    ]
+}
